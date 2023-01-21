@@ -1,15 +1,15 @@
-import { Logger } from "./Logger.js";
+import { Logger } from './Logger.js';
 const logger = new Logger();
 
 export class PageOptimizer {
   static async optimizePageLoad(page) {
     await page.setRequestInterception(true);
-    page.on("request", (req) => {
+    page.on('request', (req) => {
       const resourceType = req.resourceType();
       switch (resourceType) {
-        case "image":
-        case "font":
-        case "stylesheet":
+        case 'image':
+        case 'font':
+        case 'stylesheet':
           req.abort();
           break;
         default:
@@ -26,6 +26,7 @@ export class PageOptimizer {
     let countStableSizeIterations = 0;
     const minStableSizeIterations = 3;
 
+    /* eslint-disable */
     while (checkCounts++ <= maxChecks) {
       let html = await page.content();
       let currentHTMLSize = html.length;
@@ -35,11 +36,11 @@ export class PageOptimizer {
 
       if (verbose) {
         console.log(
-          " <> prev_size_check: ",
+          ' <> prev_size_check: ',
           lastHTMLSize,
-          " <> curr_html_size: ",
+          ' <> curr_html_size: ',
           currentHTMLSize,
-          " <> body_html_size: ",
+          ' <> body_html_size: ',
           bodyHTMLSize
         );
       }
@@ -51,12 +52,12 @@ export class PageOptimizer {
       }
 
       if (countStableSizeIterations >= minStableSizeIterations) {
-        verbose && logger.success("Page has loaded successfully.");
+        verbose && logger.success('Page has loaded successfully.');
         break;
       }
 
       lastHTMLSize = currentHTMLSize ?? 0;
-      return await page.waitFor(checkDurationMsecs);
+      return await page.waitForTimeout(checkDurationMsecs);
     }
   }
 }

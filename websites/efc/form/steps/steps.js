@@ -1,42 +1,53 @@
-import path from "path";
-import { loadJSONFile, readFileNames } from "../../../../utils.js";
-import { fileURLToPath } from "url";
+import path from 'path';
+import { loadJSONFile, readFileNames } from '../../../../utils.js';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const STEP_URLPATH_MAP = {
-  step1: "/app/efc/start",
-  step2: "/app/efc/dependency",
-  step3: "/app/efc/household-information",
-  step4: "/app/efc/parent-income",
-  step5: "/app/efc/parent-assets",
-  step6: "/app/efc/student-finances",
+export const STEP_URLPATH_MAP = {
+  step1: '/app/efc/start',
+  step2: '/app/efc/dependency',
+  step3: '/app/efc/household-information',
+  step4: '/app/efc/parent-income',
+  step5: '/app/efc/parent-assets',
+  step6: '/app/efc/student-finances',
 };
 
 export class Step {
   constructor(step = 1, questions, navURLPath) {
     this.step = step;
     this.urlPath = navURLPath;
-    this.questions = questions;
+    this.questions = Object.values(questions);
   }
 
-  parseId(id) {
-    const regex = new RegExp(/(?<!^)\./, "g");
-    const parsedId = id.replace(regex, "\\.");
+  get stepKey() {
+    return `step${this.step}`;
+  }
+
+  get firstInputId() {
+    return this.parseId(this.questions[0].input.id);
+  }
+
+  parseId(id = '') {
+    if (!id) return;
+    const regex = new RegExp(/(?<!^)\./, 'g');
+    const parsedId = id.replace(regex, '\\.');
     return `#${parsedId}`;
   }
 }
 
-const getSteps = async () => {
-  const data = [];
-  const dataDirPath = path.join(__dirname, "/data");
-  const files = readFileNames(dataDirPath);
+export const getSteps = async () => {
+  const data = {};
+  const dataDirPath = path.join(__dirname, '/data');
+  const jsonFileRegex = new RegExp(/step\d+\.json/); // step[num*].json
+  const files = readFileNames(dataDirPath).filter((f) => jsonFileRegex.test(f));
   for (const file of files) {
-    const stepNumber = file.split(".")[0];
+    const stepKey = file.split('.')[0];
+    const stepNumber = Number(stepKey.split('step')[1]);
     const jsonData = loadJSONFile(dataDirPath + `/${file}`);
-    const navURLPath = STEP_URLPATH_MAP[stepNumber];
-    data.push(new Step(stepNumber, jsonData, navURLPath));
+    const navURLPath = STEP_URLPATH_MAP[stepKey];
+    data[stepKey] = new Step(stepNumber, jsonData, navURLPath);
   }
   return data;
 };
