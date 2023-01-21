@@ -1,11 +1,15 @@
 import path from 'path';
 import { loadJSONFile, readFileNames } from '../../../../utils.js';
 import { fileURLToPath } from 'url';
+import type { IStepQuestion, IStepURLPathMap } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const STEP_URLPATH_MAP = {
+interface IStepData {
+  [key: string]: Step;
+}
+export const STEP_URLPATH_MAP: IStepURLPathMap = {
   step1: '/app/efc/start',
   step2: '/app/efc/dependency',
   step3: '/app/efc/household-information',
@@ -15,21 +19,25 @@ export const STEP_URLPATH_MAP = {
 };
 
 export class Step {
-  constructor(step = 1, questions, navURLPath) {
+  constructor(
+    public step = 1,
+    public questions: IStepQuestion[],
+    public urlPath: string
+  ) {
     this.step = step;
-    this.urlPath = navURLPath;
+    this.urlPath = urlPath;
     this.questions = Object.values(questions);
   }
 
-  get stepKey() {
+  public get stepKey() {
     return `step${this.step}`;
   }
 
-  get firstInputId() {
+  public get firstInputId() {
     return this.parseId(this.questions[0].input.id);
   }
 
-  parseId(id = '') {
+  public parseId(id = '') {
     if (!id) return;
     const regex = new RegExp(/(?<!^)\./, 'g');
     const parsedId = id.replace(regex, '\\.');
@@ -38,15 +46,15 @@ export class Step {
 }
 
 export const getSteps = async () => {
-  const data = {};
+  const data: IStepData = {};
   const dataDirPath = path.join(__dirname, '/data');
   const jsonFileRegex = new RegExp(/step\d+\.json/); // step[num*].json
   const files = readFileNames(dataDirPath).filter((f) => jsonFileRegex.test(f));
   for (const file of files) {
-    const stepKey = file.split('.')[0];
+    const stepKey: string = file.split('.')[0];
     const stepNumber = Number(stepKey.split('step')[1]);
     const jsonData = loadJSONFile(dataDirPath + `/${file}`);
-    const navURLPath = STEP_URLPATH_MAP[stepKey];
+    const navURLPath: string = STEP_URLPATH_MAP[stepKey] as string;
     data[stepKey] = new Step(stepNumber, jsonData, navURLPath);
   }
   return data;
