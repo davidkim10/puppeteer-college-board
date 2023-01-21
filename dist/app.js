@@ -1,5 +1,5 @@
 import express from 'express';
-// import { calculateEFC } from './websites/efc/index.js';
+import { calculateEFC } from './websites/efc/efc.js';
 import { stepData } from './websites/efc/form/steps/steps.js';
 const app = express();
 const PORT = 5000;
@@ -10,5 +10,5 @@ app.get('/', async (_req, res) => {
 app.listen(PORT || '5000', () => {
     console.log(`Running on PORT ${PORT}`);
 });
-// calculateEFC();
+calculateEFC();
 //# sourceMappingURL=app.js.map

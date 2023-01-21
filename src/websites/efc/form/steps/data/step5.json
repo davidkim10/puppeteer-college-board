@@ -1,7 +1,8 @@
 {
   "question1": {
     "label": "Current amount in cash, savings, and checking accounts",
-    "input": { "type": "text", "id": "parent.cashAmount" }
+    "input": { "type": "text", "id": "parent.cashAmount" },
+    "options": []
   },
   "question2": {
     "label": "Do your parents own a home?",
@@ -16,7 +17,8 @@
   },
   "question3": {
     "label": "Current value of your parents' investments",
-    "input": { "type": "text", "id": "parent.investmentValueAmount" }
+    "input": { "type": "text", "id": "parent.investmentValueAmount" },
+    "options": []
   },
   "question4": {
     "label": "Do your parents own a business?",
@@ -53,6 +55,7 @@
   },
   "question7": {
     "label": "Medical and dental expenses not covered by insurance",
-    "input": { "type": "text", "id": "parent.medicalExpenseAmount" }
+    "input": { "type": "text", "id": "parent.medicalExpenseAmount" },
+    "options": []
   }
 }

@@ -1,16 +1,17 @@
+import { Page } from 'puppeteer';
 import { Browser } from '../../browser/Browser.js';
 import { Logger } from '../../browser/Logger.js';
-import { stepData } from './form/steps/steps.js';
+import { Step, stepData } from './form/steps/steps.js';
+import { IStepQuestion } from './form/steps/types.js';
 
 const logger = new Logger();
 const COLLEGEBOARD_EFC_URL = 'https://npc.collegeboard.org/app/efc/start';
-
-function parseId(id) {
+function parseId(id: string) {
   const parsedId = id.replace(/(?<!^)\./g, '\\.');
   return `#${parsedId}`;
 }
 
-async function autoFillFields(page, _steps) {
+async function autoFillFields(page: Page, _steps: IStepQuestion[]) {
   // [{}, {}]
   const steps = Object.values(_steps);
   for (const step of steps) {
@@ -27,17 +28,21 @@ async function autoFillFields(page, _steps) {
           await page.select(selectId, input.options[3].value);
           break;
         case 'radio':
-          const radioId = parseId(input.options[1].id);
-          await page.click(radioId, input.options[1].value);
+          const radioId = parseId(input.options[1].id as string);
+          await page.click(radioId);
           break;
       }
     } catch (err) {
-      logger.error(err, input.id);
+      logger.error(err);
     }
   }
 }
 
-async function navigateStepWizard(page, step = 1, callback) {
+async function navigateStepWizard(
+  page: Page,
+  step = 1,
+  callback?: (step: number) => void
+) {
   const wizardStep = Math.max(step - 1, 0);
   const linkClassName = 'a.nav-link';
   try {
@@ -53,7 +58,7 @@ async function navigateStepWizard(page, step = 1, callback) {
   }
 }
 
-async function getTotalSteps(page) {
+async function getTotalSteps(page: Page) {
   try {
     await page.waitForSelector('a.nav-link');
     const stepCount = await page.$$eval('a.nav-link', (links) => links.length);
@@ -80,9 +85,11 @@ export async function calculateEFC() {
       //   {},
       //   i
       // );
-      await page.waitForNetworkIdle();
-      await autoFillFields(page, step.questions);
-      await navigateStepWizard(page, i + 1);
+      if (page) {
+        await page.waitForNetworkIdle();
+        await autoFillFields(page, step.questions);
+        await navigateStepWizard(page, i + 1);
+      }
     } catch (err) {
       throw err;
     }

@@ -71,26 +71,32 @@
   },
   "question2": {
     "label": "Combined wages, salaries, and tips from your work",
-    "input": { "type": "text", "id": "student.workIncome" }
+    "input": { "type": "text", "id": "student.workIncome" },
+    "options": []
   },
   "question3": {
     "label": "Your adjusted gross income (AGI)",
-    "input": { "type": "text", "id": "student.agi" }
+    "input": { "type": "text", "id": "student.agi" },
+    "options": []
   },
   "question4": {
     "label": "Your federal tax payment",
-    "input": { "type": "text", "id": "student.federalTaxes" }
+    "input": { "type": "text", "id": "student.federalTaxes" },
+    "options": []
   },
   "question5": {
     "label": "Your untaxed income and benefits",
-    "input": { "type": "text", "id": "student.untaxedIncome" }
+    "input": { "type": "text", "id": "student.untaxedIncome" },
+    "options": []
   },
   "question6": {
     "label": "Current amount in cash, savings, checking accounts, and investments",
-    "input": { "type": "text", "id": "student.cashAmount" }
+    "input": { "type": "text", "id": "student.cashAmount" },
+    "options": []
   },
   "question7": {
     "label": "Current value of all of the trusts of which you are a beneficiary",
-    "input": { "type": "text", "id": "student.trustValueAmount" }
+    "input": { "type": "text", "id": "student.trustValueAmount" },
+    "options": []
   }
 }

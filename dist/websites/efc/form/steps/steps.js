@@ -26,9 +26,7 @@ export class Step {
     get firstInputId() {
         return this.parseId(this.questions[0].input.id);
     }
-    parseId(id = '') {
-        if (!id)
-            return;
+    parseId(id) {
         const regex = new RegExp(/(?<!^)\./, 'g');
         const parsedId = id.replace(regex, '\\.');
         return `#${parsedId}`;

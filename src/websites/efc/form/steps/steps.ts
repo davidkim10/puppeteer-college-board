@@ -37,8 +37,7 @@ export class Step {
     return this.parseId(this.questions[0].input.id);
   }
 
-  public parseId(id = '') {
-    if (!id) return;
+  public parseId(id: string) {
     const regex = new RegExp(/(?<!^)\./, 'g');
     const parsedId = id.replace(regex, '\\.');
     return `#${parsedId}`;

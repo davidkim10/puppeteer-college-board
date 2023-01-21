@@ -1,31 +1,38 @@
 {
   "question1": {
     "label": "Your parents' combined adjusted gross income (AGI)",
-    "input": { "type": "text", "id": "parent.agi" }
+    "input": { "type": "text", "id": "parent.agi" },
+    "options": []
   },
   "question2": {
     "label": "Your parents' federal tax payment",
-    "input": { "type": "text", "id": "parent.federalTaxes" }
+    "input": { "type": "text", "id": "parent.federalTaxes" },
+    "options": []
   },
   "question3": {
     "label": "Work income from one parent",
-    "input": { "type": "text", "id": "parent.parent1WorkIncome" }
+    "input": { "type": "text", "id": "parent.parent1WorkIncome" },
+    "options": []
   },
   "question4": {
     "label": "Taxable combat pay included in AGI",
-    "input": { "type": "text", "id": "parent.combatPay" }
+    "input": { "type": "text", "id": "parent.combatPay" },
+    "options": []
   },
   "question5": {
     "label": "Educational tax credits your parents received",
-    "input": { "type": "text", "id": "parent.educationTaxCreditAmount" }
+    "input": { "type": "text", "id": "parent.educationTaxCreditAmount" },
+    "options": []
   },
   "question6": {
     "label": "Untaxed income, benefits, and retirement plan contributions by your parents",
-    "input": { "type": "text", "id": "parent.untaxedIncome" }
+    "input": { "type": "text", "id": "parent.untaxedIncome" },
+    "options": []
   },
   "question7": {
     "label": "Untaxed Social Security benefits",
-    "input": { "type": "text", "id": "parent.socialSecurity" }
+    "input": { "type": "text", "id": "parent.socialSecurity" },
+    "options": []
   },
   "question8": {
     "label": "Receive federal means-tested benefits?",
