@@ -1,0 +1,33 @@
+{
+  "question1": {
+    "label": "The student's first name (optional)",
+    "input": { "type": "text", "id": "student.firstName" }
+  },
+  "question2": {
+    "label": "Who will be answering the questions?",
+    "input": {
+      "type": "select",
+      "id": "student.completingCalculator",
+      "options": [
+        { "value": "" },
+        { "value": "1" },
+        { "value": "2" },
+        { "value": "3" },
+        { "value": "4" }
+      ]
+    }
+  },
+  "question3": {
+    "label": "Select the formula method to use",
+    "input": {
+      "type": "select",
+      "id": "student.efcFormula",
+      "options": [
+        { "value": "" },
+        { "value": "1" },
+        { "value": "2" },
+        { "value": "3" }
+      ]
+    }
+  }
+}
