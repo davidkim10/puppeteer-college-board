@@ -1,14 +1,14 @@
 import path from 'path';
-import { loadJSONFile, readFileNames } from '../../../../utils.js';
+import { loadJSONFile, readFileNames, reverseMap } from '../../../../utils.js';
 import { fileURLToPath } from 'url';
-import type { IStepQuestion, IStepURLPathMap } from './types.js';
+import {
+  IStepQuestion,
+  IStepURLPathMap,
+  InputTypes,
+  IStepURLReversePathMap,
+  StepURLPathMapKey,
+} from './types.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-interface IStepData {
-  [key: string]: Step;
-}
 export const STEP_URLPATH_MAP: IStepURLPathMap = {
   step1: '/app/efc/start',
   step2: '/app/efc/dependency',
@@ -17,6 +17,9 @@ export const STEP_URLPATH_MAP: IStepURLPathMap = {
   step5: '/app/efc/parent-assets',
   step6: '/app/efc/student-finances',
 };
+
+export const STEP_URLPATH_REVERSE_MAP: IStepURLReversePathMap =
+  reverseMap(STEP_URLPATH_MAP);
 
 export class Step {
   constructor(
@@ -33,30 +36,53 @@ export class Step {
     return `step${this.step}`;
   }
 
-  public get firstInputId() {
-    return this.parseId(this.questions[0].input.id);
+  public filterQuestions(ids: string[]): IStepQuestion[] {
+    const questions = this.questions.filter(({ input }) => {
+      if (input.type === InputTypes.radio) {
+        const optionIds = input.options.map(({ id }) => id);
+        return ids.some((id) => optionIds.includes(id));
+      }
+      return ids.includes(input.id);
+    });
+
+    return questions;
+  }
+}
+
+export class Steps extends Map<StepURLPathMapKey, Step> {
+  constructor() {
+    super();
+    this.getSteps();
   }
 
-  public parseId(id: string) {
+  static parseId(id: string) {
     const regex = new RegExp(/(?<!^)\./, 'g');
     const parsedId = id.replace(regex, '\\.');
     return `#${parsedId}`;
   }
-}
 
-export const getSteps = async () => {
-  const data: IStepData = {};
-  const dataDirPath = path.join(__dirname, '/data');
-  const jsonFileRegex = new RegExp(/step\d+\.json/); // step[num*].json
-  const files = readFileNames(dataDirPath).filter((f) => jsonFileRegex.test(f));
-  for (const file of files) {
-    const stepKey: string = file.split('.')[0];
-    const stepNumber = Number(stepKey.split('step')[1]);
-    const jsonData = loadJSONFile(dataDirPath + `/${file}`);
-    const navURLPath: string = STEP_URLPATH_MAP[stepKey] as string;
-    data[stepKey] = new Step(stepNumber, jsonData, navURLPath);
+  private get dirName() {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    return path.join(__dirname, '/data');
   }
-  return data;
-};
 
-export const stepData = await getSteps();
+  private getStepDataFileNames() {
+    const dataDirPath = this.dirName;
+    const stepDataFileNameRegex = new RegExp(/step\d+\.json/); // step[num*].json
+    const fileNames = readFileNames(dataDirPath);
+    return fileNames.filter((file) => stepDataFileNameRegex.test(file));
+  }
+
+  private getSteps() {
+    const dataDirPath = this.dirName;
+    const files = this.getStepDataFileNames();
+    for (const file of files) {
+      const stepKey = file.split('.')[0] as StepURLPathMapKey;
+      const stepNumber = Number(stepKey.split('step')[1]);
+      const jsonData = loadJSONFile(dataDirPath + `/${file}`);
+      const navURLPath: string = STEP_URLPATH_MAP[stepKey];
+      this.set(stepKey, new Step(stepNumber, jsonData, navURLPath));
+    }
+  }
+}
