@@ -1,8 +1,9 @@
 import { Logger } from './Logger.js';
+import { Page } from 'puppeteer';
 const logger = new Logger();
 
 export class PageOptimizer {
-  static async optimizePageLoad(page) {
+  static async optimizePageLoad(page: Page) {
     await page.setRequestInterception(true);
     page.on('request', (req) => {
       const resourceType = req.resourceType();
@@ -18,7 +19,11 @@ export class PageOptimizer {
     });
   }
 
-  static async waitTillHTMLRendered(page, timeout = 30000, verbose) {
+  static async waitTillHTMLRendered(
+    page: Page,
+    timeout = 30000,
+    verbose: boolean
+  ) {
     const checkDurationMsecs = 1000;
     const maxChecks = timeout / checkDurationMsecs;
     let lastHTMLSize = 0;
@@ -26,7 +31,6 @@ export class PageOptimizer {
     let countStableSizeIterations = 0;
     const minStableSizeIterations = 3;
 
-    /* eslint-disable */
     while (checkCounts++ <= maxChecks) {
       let html = await page.content();
       let currentHTMLSize = html.length;
@@ -35,14 +39,12 @@ export class PageOptimizer {
       );
 
       if (verbose) {
-        console.log(
-          ' <> prev_size_check: ',
-          lastHTMLSize,
-          ' <> curr_html_size: ',
-          currentHTMLSize,
-          ' <> body_html_size: ',
-          bodyHTMLSize
-        );
+        const logMessage = `
+          <> prev_size_check: ${lastHTMLSize} 
+          <> curr_html_size: ${currentHTMLSize}
+          <> body_html_size: ${bodyHTMLSize}
+        `;
+        console.log(logMessage);
       }
 
       if (lastHTMLSize && currentHTMLSize == lastHTMLSize) {
@@ -57,7 +59,9 @@ export class PageOptimizer {
       }
 
       lastHTMLSize = currentHTMLSize ?? 0;
-      return await page.waitForTimeout(checkDurationMsecs);
+      // deprecated fn
+      // return await page.waitForTimeout(checkDurationMsecs);
+      return new Promise((r) => setTimeout(r, checkDurationMsecs));
     }
   }
 }
