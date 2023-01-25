@@ -1,7 +1,7 @@
 import type { Page } from 'puppeteer';
 import { Browser } from '../../browser/Browser.js';
 import { Logger } from '../../browser/Logger.js';
-import { STEP_URLPATH_REVERSE_MAP, Steps } from './form/steps/steps.js';
+import { Steps, StepPathMap } from './form/steps/steps.js';
 import {
   InputTypes,
   IStepQuestion,
@@ -11,30 +11,31 @@ import {
 const COLLEGEBOARD_EFC_URL = 'https://npc.collegeboard.org/app/efc/start';
 const logger = new Logger();
 const stepData = new Steps();
-function parseId(id: string) {
-  const parsedId = id.replace(/(?<!^)\./g, '\\.');
-  return `#${parsedId}`;
-}
+const stepPathMap = new StepPathMap();
 
 async function autoFillFields(page: Page, questions: IStepQuestion[]) {
   for (const question of questions) {
-    const input = question.input;
-    await page.waitForNetworkIdle();
-    if (input.id) {
-      await page.waitForSelector(Steps.parseId(input.id));
-    }
     try {
+      const input = question.input;
+      await page.waitForNetworkIdle();
+      if (input.id) await page.waitForSelector(Steps.parseId(input.id));
       switch (input.type) {
         case InputTypes.text:
-          const inputTextId = parseId(input.id);
+          const inputTextId = Steps.parseId(input.id);
           await page.type(inputTextId, 'Insert Dynamic value');
           break;
         case InputTypes.select:
-          const selectId = parseId(input.id);
-          await page.select(selectId, input.options[3].value);
+          const selectId = Steps.parseId(input.id);
+          await handleSelectInput(
+            page,
+            Steps.parseId(input.id, false),
+            'Counselor'
+          );
+          // await page.select(selectId, input.options[3].value);
           break;
         case InputTypes.radio:
-          const radioId = parseId(input.options[1].id as string);
+          const radioId = Steps.parseId(input.options[1].id as string);
+          await page.waitForSelector(radioId);
           await page.click(radioId);
           break;
       }
@@ -57,11 +58,7 @@ async function checkLastStep(page: Page) {
   });
 }
 
-async function navigateStepWizard(
-  page: Page,
-  step = 1,
-  callback?: (step: number) => void
-) {
+async function navigateStepWizard(page: Page, step = 1) {
   const wizardStep = Math.max(step - 1, 0);
   const linkClassName = 'a.nav-link';
   try {
@@ -71,10 +68,20 @@ async function navigateStepWizard(
       (links, wizardStep) => links[wizardStep].click(),
       wizardStep
     );
-    callback && callback(step);
   } catch (err) {
     logger.error(err);
   }
+}
+
+async function getCurrentStep(page: Page) {
+  await page.waitForNetworkIdle();
+  await page.waitForSelector('a.nav-link');
+  const reverseMap = stepPathMap.stepURLReversePathMap;
+  const activeStepPath = await page.$eval(
+    'a.nav-link.active',
+    (link) => link.pathname
+  );
+  return reverseMap[activeStepPath][0] as StepURLPathMapKey;
 }
 
 // async function getTotalSteps(page: Page) {
@@ -84,21 +91,12 @@ async function navigateStepWizard(
 //   return stepCount;
 // }
 
-async function getCurrentStep(page: Page) {
-  await page.waitForNetworkIdle();
-  await page.waitForSelector('a.nav-link');
-  const activeStepPath = await page.$eval(
-    'a.nav-link.active',
-    (link) => link.pathname
-  );
-
-  return STEP_URLPATH_REVERSE_MAP[activeStepPath][0] as StepURLPathMapKey;
-}
-
 async function getCurrentQuestions(page: Page) {
+  const containerElement = 'app-question';
   await page.waitForNetworkIdle();
-  await page.waitForSelector('app-question');
-  const questions = await page.$$eval('app-question', (questions) => {
+  await page.waitForSelector(containerElement);
+  await page.waitForTimeout(1000);
+  const questions = await page.$$eval(containerElement, (questions) => {
     return questions.flatMap((q) => {
       const selector = q.querySelector('select')?.id;
       const text = q.querySelector('input[type="text"]')?.id;
@@ -110,11 +108,37 @@ async function getCurrentQuestions(page: Page) {
   return questions;
 }
 
+async function handleSelectInput(page: Page, selectId: string, answer: string) {
+  const options = await page.$eval(`select#${selectId}`, (select) => {
+    return Array.from(select.options).map((option) => ({
+      value: option.value,
+      innerText: option.innerText,
+    }));
+  });
+
+  for (const option of options) {
+    const isTargetItem = matchString(answer, option.innerText);
+    if (isTargetItem) {
+      await page.select(`#${selectId}`, option.value);
+      break;
+    }
+  }
+}
+
+async function handleRadioInput(page: Page) {}
+
+function matchString(str: string, testString: string) {
+  const regPattern = str.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const regex = new RegExp(regPattern, 'gi');
+  return regex.test(testString);
+}
+
 export async function calculateEFC() {
   const browser = new Browser('College Board EFC Calculator');
   await browser.start();
 
   const page = await browser.newPage(COLLEGEBOARD_EFC_URL);
+  // await page.exposeFunction('matchString', matchString);
 
   for (let i = 1; i <= stepData.size; i++) {
     let currentStep = await getCurrentStep(page);
@@ -133,6 +157,7 @@ export async function calculateEFC() {
         );
         await page.waitForTimeout(3000);
         await navigateStepWizard(page, i + 1);
+        if (i === 2) break;
       } else {
         console.error('last step!');
         break;

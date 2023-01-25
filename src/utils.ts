@@ -16,3 +16,10 @@ export const readFileNames = (directory: fs.PathLike) => {
   const files = fs.readdirSync(directory);
   return files;
 };
+
+export const reverseMap = (o = {}) =>
+  Object.keys(o).reduce(
+    // @ts-ignore
+    (r, k) => Object.assign(r, { [o[k]]: (r[o[k]] || []).concat(k) }),
+    {}
+  );

@@ -17,7 +17,6 @@ export const config: IConfig = {
     ],
     headless: false,
     ignoreHTTPSErrors: false,
-    // userDataDir: "./tmp",
     // slowMo: 0,
   },
 };

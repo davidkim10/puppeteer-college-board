@@ -21,6 +21,42 @@ export const STEP_URLPATH_MAP: IStepURLPathMap = {
 export const STEP_URLPATH_REVERSE_MAP: IStepURLReversePathMap =
   reverseMap(STEP_URLPATH_MAP);
 
+export class StepPathMap extends Map<StepURLPathMapKey, string> {
+  public stepURLPathMap: IStepURLPathMap;
+  constructor() {
+    super();
+    this.stepURLPathMap = {
+      step1: '/app/efc/start',
+      step2: '/app/efc/dependency',
+      step3: '/app/efc/household-information',
+      step4: '/app/efc/parent-income',
+      step5: '/app/efc/parent-assets',
+      step6: '/app/efc/student-finances',
+    };
+    this.initialize();
+  }
+
+  public get stepURLReversePathMap(): IStepURLReversePathMap {
+    return this.reversePathMap(this.stepURLPathMap);
+  }
+
+  private reversePathMap(o: IStepURLPathMap): IStepURLReversePathMap {
+    return Object.keys(o).reduce(
+      // @ts-ignore
+      (r, k) => Object.assign(r, { [o[k]]: (r[o[k]] || []).concat(k) }),
+      {}
+    );
+  }
+
+  private initialize() {
+    for (const k in this.stepURLPathMap) {
+      const key = k as StepURLPathMapKey;
+      const value = this.stepURLPathMap[key];
+      this.set(key, value);
+    }
+  }
+}
+
 export class Step {
   constructor(
     public step = 1,
@@ -38,7 +74,8 @@ export class Step {
 
   public filterQuestions(ids: string[]): IStepQuestion[] {
     const questions = this.questions.filter(({ input }) => {
-      if (input.type === InputTypes.radio) {
+      const isRadioType = input.type === InputTypes.radio;
+      if (isRadioType) {
         const optionIds = input.options.map(({ id }) => id);
         return ids.some((id) => optionIds.includes(id));
       }
@@ -55,10 +92,10 @@ export class Steps extends Map<StepURLPathMapKey, Step> {
     this.getSteps();
   }
 
-  static parseId(id: string) {
+  public static parseId(id: string, cssHash: boolean = true) {
     const regex = new RegExp(/(?<!^)\./, 'g');
     const parsedId = id.replace(regex, '\\.');
-    return `#${parsedId}`;
+    return cssHash ? `#${parsedId}` : parsedId;
   }
 
   private get dirName() {
