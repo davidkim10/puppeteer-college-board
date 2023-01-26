@@ -1,6 +1,11 @@
 import { ElementHandle } from 'puppeteer';
 
-export type StepKey = 'step1' | 'step2' | 'step3' | 'step4' | 'step5' | 'step6';
+export enum FieldType {
+  text = 'text',
+  select = 'select',
+  radio = 'radio',
+  radioGroup = 'radio-group',
+}
 
 export type QuestionElementHandle =
   | HTMLInputElement

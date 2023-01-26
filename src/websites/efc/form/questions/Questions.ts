@@ -1,10 +1,9 @@
-import e from 'express';
 import { ElementHandle, Page } from 'puppeteer';
-import { FieldType } from '../steps/types.js';
-import {
+import type { StepKey } from '../steps/Steps.js';
+import { FieldType } from './types.js';
+import type {
   QuestionFieldTypes,
   QuestionElementHandle,
-  StepKey,
   RadioOptions,
 } from './types.js';
 
