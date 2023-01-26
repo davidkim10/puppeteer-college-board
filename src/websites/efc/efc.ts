@@ -1,9 +1,10 @@
 import type { Page } from 'puppeteer';
 import { Browser } from '../../browser/Browser.js';
 import { Logger } from '../../browser/Logger.js';
+import { Questions } from './form/questions/Questions.js';
 import { Steps, StepPathMap } from './form/steps/steps.js';
 import {
-  InputTypes,
+  FieldType,
   IStepQuestion,
   StepURLPathMapKey,
 } from './form/steps/types.js';
@@ -20,11 +21,11 @@ async function autoFillFields(page: Page, questions: IStepQuestion[]) {
       await page.waitForNetworkIdle();
       if (input.id) await page.waitForSelector(Steps.parseId(input.id));
       switch (input.type) {
-        case InputTypes.text:
+        case FieldType.text:
           const inputTextId = Steps.parseId(input.id);
           await page.type(inputTextId, 'Insert Dynamic value');
           break;
-        case InputTypes.select:
+        case FieldType.select:
           const selectId = Steps.parseId(input.id);
           await handleSelectInput(
             page,
@@ -33,7 +34,7 @@ async function autoFillFields(page: Page, questions: IStepQuestion[]) {
           );
           // await page.select(selectId, input.options[3].value);
           break;
-        case InputTypes.radio:
+        case FieldType.radio:
           const radioId = Steps.parseId(input.options[1].id as string);
           await page.waitForSelector(radioId);
           await page.click(radioId);
@@ -98,10 +99,10 @@ async function getCurrentQuestions(page: Page) {
   await page.waitForTimeout(1000);
   const questions = await page.$$eval(containerElement, (questions) => {
     return questions.flatMap((q) => {
-      const selector = q.querySelector('select')?.id;
+      const select = q.querySelector('select')?.id;
       const text = q.querySelector('input[type="text"]')?.id;
       const radio = q.querySelector('input[type="radio"]')?.id;
-      return [selector, text, radio].filter(Boolean) as string[];
+      return [select, text, radio].filter(Boolean) as string[];
     });
   });
 
@@ -125,8 +126,6 @@ async function handleSelectInput(page: Page, selectId: string, answer: string) {
   }
 }
 
-async function handleRadioInput(page: Page) {}
-
 function matchString(str: string, testString: string) {
   const regPattern = str.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
   const regex = new RegExp(regPattern, 'gi');
@@ -138,32 +137,36 @@ export async function calculateEFC() {
   await browser.start();
 
   const page = await browser.newPage(COLLEGEBOARD_EFC_URL);
-  // await page.exposeFunction('matchString', matchString);
+  const questions = new Questions(page);
+  await questions.sync('step1');
+  await navigateStepWizard(page, 2);
+  await questions.sync('step2');
+  // questions.forEach((q) => console.log(q));
 
-  for (let i = 1; i <= stepData.size; i++) {
-    let currentStep = await getCurrentStep(page);
-    let currentQuestions = await getCurrentQuestions(page);
-    console.log('currentstep:', currentStep, currentQuestions);
-    const currentStepData = stepData.get(currentStep);
+  // for (let i = 1; i <= stepData.size; i++) {
+  //   let currentStep = await getCurrentStep(page);
+  //   let currentQuestions = await getCurrentQuestions(page);
+  //   console.log('currentstep:', currentStep, currentQuestions);
+  //   const currentStepData = stepData.get(currentStep);
 
-    if (currentStepData) {
-      autoFillFields(page, currentStepData.filterQuestions(currentQuestions));
-      const isLastStep = await checkLastStep(page);
-      if (!isLastStep) {
-        console.log(
-          'not last step -- current step',
-          currentStep,
-          'next step + 1'
-        );
-        await page.waitForTimeout(3000);
-        await navigateStepWizard(page, i + 1);
-        if (i === 2) break;
-      } else {
-        console.error('last step!');
-        break;
-      }
-    }
-  }
+  //   if (currentStepData) {
+  //     autoFillFields(page, currentStepData.filterQuestions(currentQuestions));
+  //     const isLastStep = await checkLastStep(page);
+  //     if (!isLastStep) {
+  //       console.log(
+  //         'not last step -- current step',
+  //         currentStep,
+  //         'next step + 1'
+  //       );
+  //       await page.waitForTimeout(3000);
+  //       await navigateStepWizard(page, i + 1);
+  //       if (i === 2) break;
+  //     } else {
+  //       console.error('last step!');
+  //       break;
+  //     }
+  //   }
+  // }
 
   return;
 

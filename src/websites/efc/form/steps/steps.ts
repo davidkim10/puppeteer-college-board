@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import {
   IStepQuestion,
   IStepURLPathMap,
-  InputTypes,
+  FieldType,
   IStepURLReversePathMap,
   StepURLPathMapKey,
 } from './types.js';
@@ -74,7 +74,7 @@ export class Step {
 
   public filterQuestions(ids: string[]): IStepQuestion[] {
     const questions = this.questions.filter(({ input }) => {
-      const isRadioType = input.type === InputTypes.radio;
+      const isRadioType = input.type === FieldType.radio;
       if (isRadioType) {
         const optionIds = input.options.map(({ id }) => id);
         return ids.some((id) => optionIds.includes(id));

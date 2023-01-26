@@ -1,7 +1,8 @@
-export enum InputTypes {
+export enum FieldType {
   text = 'text',
   select = 'select',
   radio = 'radio',
+  radioGroup = 'radio-group',
 }
 interface IStepOption {
   value: string;
@@ -9,7 +10,7 @@ interface IStepOption {
 }
 
 interface IStepInput {
-  type: InputTypes;
+  type: FieldType;
   id: string;
   options: IStepOption[];
 }
