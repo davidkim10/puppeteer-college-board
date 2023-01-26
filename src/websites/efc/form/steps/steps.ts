@@ -8,7 +8,7 @@ export class Steps extends Map<StepKey, string> {
   private _isLast: boolean;
   private _pathName: string;
 
-  constructor(public page: Page) {
+  constructor(private page: Page) {
     super();
     this.navLink = 'a.nav-link';
     this.urlMap = {
@@ -42,11 +42,11 @@ export class Steps extends Map<StepKey, string> {
     const steps = await this.page.$$(this.navLink);
     const targetStep = steps[stepIndex];
     await targetStep.click();
+    await this.page.waitForNavigation({ timeout: 5000 });
     await this.syncSteps();
   }
 
   public async syncSteps(): Promise<void> {
-    await this.page.waitForNavigation({ timeout: 5000 });
     await this.page.waitForNetworkIdle();
     this._activeStep = await this.getActiveStep();
     this._isLast = await this.isLastStep();
@@ -80,6 +80,7 @@ export class Steps extends Map<StepKey, string> {
   }
 
   private async getPathName(): Promise<string> {
+    // await this.page.waitForNetworkIdle();
     return await this.page.evaluate(() => window.location.pathname);
   }
 

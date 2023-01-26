@@ -2,7 +2,7 @@ import type { Page } from 'puppeteer';
 import { Browser } from '../../browser/Browser.js';
 import { Logger } from '../../browser/Logger.js';
 import { Questions } from './form/questions/Questions.js';
-import { Steps } from './form/steps/Steps.js';
+import { StepKey, Steps } from './form/steps/Steps.js';
 
 const COLLEGEBOARD_EFC_URL = 'https://npc.collegeboard.org/app/efc/start';
 const logger = new Logger();
@@ -44,18 +44,23 @@ export async function calculateEFC() {
   const page = await browser.newPage(COLLEGEBOARD_EFC_URL);
   const questions = new Questions(page);
   const steps = new Steps(page);
-  console.log('step:', steps.activeStep);
-  console.log(steps.isLast);
-  console.log(steps.pathName);
-  await questions.sync('step1');
-  await steps.navigate(2);
-  console.log('step:', steps.activeStep);
-  console.log(steps.isLast);
-  console.log(steps.pathName);
 
-  // await navigateStepWizard(page, 2);
-  await questions.sync('step2');
-  // questions.forEach((q) => console.log(q));
+  for (let wizardStep = 1; wizardStep <= steps.size; wizardStep++) {
+    const stepKey = `step${wizardStep}` as StepKey;
+    await questions.scrape(stepKey);
+    if (wizardStep > 1) {
+      logger.log(`WizardStep ${wizardStep}`);
+      logger.log(`QUESTION COUNT:${questions.size}`);
+      await steps.navigate(wizardStep);
+      console.table({
+        step: steps.activeStep,
+        path: steps.pathName,
+        isLast: steps.isLast,
+      });
+    }
+  }
+
+  questions.forEach((q) => console.log(q));
 
   // for (let i = 1; i <= stepData.size; i++) {
   //   let currentStep = await getCurrentStep(page);

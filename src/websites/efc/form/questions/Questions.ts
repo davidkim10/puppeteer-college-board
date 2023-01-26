@@ -115,7 +115,7 @@ export class Questions extends Map<StepKey, ReadonlyArray<Question>> {
     return questions;
   }
 
-  public async sync(key: StepKey): Promise<void> {
+  public async scrape(key: StepKey): Promise<void> {
     const questions = await this.getCurrentQuestions();
     this.set(key, questions);
   }
