@@ -141,7 +141,7 @@ export async function calculateEFC() {
   await questions.sync('step1');
   await navigateStepWizard(page, 2);
   await questions.sync('step2');
-  // questions.forEach((q) => console.log(q));
+  questions.forEach((q) => console.log(q));
 
   // for (let i = 1; i <= stepData.size; i++) {
   //   let currentStep = await getCurrentStep(page);

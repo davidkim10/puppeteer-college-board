@@ -8,7 +8,6 @@ import {
   RadioOptions,
 } from './types.js';
 
-export type QuestionsData = ReadonlyArray<Question>;
 class Question {
   constructor(
     public element: ElementHandle<QuestionElementHandle>,
@@ -18,7 +17,7 @@ class Question {
   ) {}
 }
 
-export class Questions extends Map<StepKey, QuestionsData> {
+export class Questions extends Map<StepKey, ReadonlyArray<Question>> {
   private containerEl: string;
   constructor(private page: Page) {
     super();
@@ -57,7 +56,7 @@ export class Questions extends Map<StepKey, QuestionsData> {
   }
 
   private async getRadioOptions(radioGroup: ElementHandle<HTMLElement>) {
-    const options: RadioOptions = [];
+    const options: Array<RadioOptions> = [];
     const radioInputs = await radioGroup.$$('input[type="radio"]');
     for (const radio of radioInputs) {
       const attributes = await this.page.evaluate(
