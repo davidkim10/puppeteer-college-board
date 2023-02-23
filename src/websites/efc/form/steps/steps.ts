@@ -1,4 +1,4 @@
-import { Page } from 'puppeteer';
+import { ElementHandle, Page } from 'puppeteer';
 export type StepKey = 'step1' | 'step2' | 'step3' | 'step4' | 'step5' | 'step6';
 
 export class Steps extends Map<StepKey, string> {
@@ -19,6 +19,9 @@ export class Steps extends Map<StepKey, string> {
       step5: '/app/efc/parent-assets',
       step6: '/app/efc/student-finances',
     };
+    this._activeStep = 'step1';
+    this._isLast = false;
+    this._pathName = this.urlMap['step1'];
     this.initialize();
   }
 
@@ -35,15 +38,36 @@ export class Steps extends Map<StepKey, string> {
   }
 
   public async navigate(step: number): Promise<void> {
-    await this.page.waitForNetworkIdle();
+    // await this.page.waitForNetworkIdle();
     await this.page.waitForSelector(this.navLink);
     const maxStep = 6;
     const stepIndex = this.minMax(step - 1, 0, maxStep);
     const steps = await this.page.$$(this.navLink);
-    const targetStep = steps[stepIndex];
+    const targetStep = steps[stepIndex] as ElementHandle<HTMLAnchorElement>;
+    // const label = await this.page.evaluate((a) => a.href, targetStep);
+
+    // console.log('target', label);
     await targetStep.click();
-    await this.page.waitForNavigation({ timeout: 5000 });
+    try {
+      await this.page.waitForNavigation({
+        waitUntil: 'networkidle0',
+        timeout: 10002,
+      });
+    } catch (e) {
+      console.error(e);
+    }
+    // await this.page.waitForNavigation();
     await this.syncSteps();
+  }
+
+  public async nextStep() {
+    await this.page.waitForSelector('button[type="submit"]');
+    const nextButton = await this.page.$('button[type="submit"]');
+    const hasNextStep = !this.isLast && nextButton;
+    if (hasNextStep) {
+      await nextButton.click();
+      await this.syncSteps();
+    }
   }
 
   public async syncSteps(): Promise<void> {

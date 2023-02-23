@@ -7,7 +7,7 @@ import type {
   RadioOptions,
 } from './types.js';
 
-class Question {
+export class Question {
   constructor(
     public element: ElementHandle<QuestionElementHandle>,
     public label: string,
@@ -17,17 +17,12 @@ class Question {
 }
 
 export class Questions extends Map<StepKey, ReadonlyArray<Question>> {
-  private containerEl: string;
-  constructor(private page: Page) {
+  constructor(public page: Page, private containerEl = 'app-question') {
     super();
     this.page = page;
-    this.containerEl = 'app-question';
   }
 
   private async getTagName(element: ElementHandle): Promise<string> {
-    // alternative
-    // let tagName = await element.getProperty('tagName')
-    // tagName = await tagName.jsonValue()
     return await this.page.evaluate((el) => el.tagName, element);
   }
 
@@ -83,7 +78,7 @@ export class Questions extends Map<StepKey, ReadonlyArray<Question>> {
 
       case FieldType.select:
         const selectOptions = await this.getSelectOptions(element);
-        field = { id, tagName, options: selectOptions };
+        field.options = selectOptions;
         break;
     }
     return field as QuestionFieldTypes;
@@ -108,10 +103,10 @@ export class Questions extends Map<StepKey, ReadonlyArray<Question>> {
       ].filter(Boolean)[0];
       const field = await this.getField(elementHandler);
       const type = await this.getFieldType(elementHandler);
-
-      questions.push(new Question(elementHandler, label, type, field));
+      const question = new Question(elementHandler, label, type, field);
+      questions.push(question);
     }
-    // console.log(questions);
+
     return questions;
   }
 
@@ -119,4 +114,8 @@ export class Questions extends Map<StepKey, ReadonlyArray<Question>> {
     const questions = await this.getCurrentQuestions();
     this.set(key, questions);
   }
+}
+
+export class Test<T> {
+  constructor(public label: string, public field: T) {}
 }

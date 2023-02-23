@@ -3,7 +3,6 @@ import { ElementHandle } from 'puppeteer';
 export enum FieldType {
   text = 'text',
   select = 'select',
-  radio = 'radio',
   radioGroup = 'radio-group',
 }
 
@@ -26,6 +25,7 @@ export type RadioOptions = {
 export interface ITextQuestion {
   id: string;
   tagName: string;
+  options?: ReadonlyArray<any>;
 }
 export interface ISelectQuestion extends ITextQuestion {
   options: ReadonlyArray<SelectOptions>;
